@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (C) 2024 EclipseSource.
+ * Copyright (C) 2024 EclipseSource and Arm Limited.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -37,11 +37,12 @@ function encodeHexByte(value: number): string {
 }
 
 function parseHexByte(value: string, context: string): number {
-    const parsed = Number.parseInt(value, 16);
-    if (Number.isNaN(parsed)) {
+    // Validate the complete token because parseInt accepts valid prefixes such as
+    // "0G" as zero. Callers must not be able to pass partial or malformed bytes.
+    if (!/^[0-9A-Fa-f]{2}$/.test(value)) {
         throw new Error(`Invalid ${context}: '${value}'`);
     }
-    return parsed;
+    return Number.parseInt(value, 16);
 }
 
 function createRecord(recordType: number, address: number, data: ArrayLike<number>): string {

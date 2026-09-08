@@ -80,8 +80,8 @@ export class MemoryStorage {
         try {
             const memoryResponse = await memoryProvider.readMemory(readArgs);
             const memory = createMemoryFromRead(memoryResponse);
-            const encodedContent = IntelHEX.encode({ address: memory.address, bytes: memory.bytes });
-            await vscode.workspace.fs.writeFile(outputFile, new TextEncoder().encode(encodedContent));
+            const hexEncodedContent = IntelHEX.encode({ address: memory.address, bytes: memory.bytes });
+            await vscode.workspace.fs.writeFile(outputFile, new TextEncoder().encode(hexEncodedContent));
         } catch (error) {
             if (error instanceof Error) {
                 vscode.window.showErrorMessage(`Could not write memory to '${vscode.workspace.asRelativePath(outputFile)}': ${error.message}`);

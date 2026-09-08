@@ -14,9 +14,25 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import 'mocha';
 import { expect } from 'chai';
+import 'mocha';
+
 import { IntelHEX } from './intel-hex';
+
+const REPRESENTATIVE_CAPTURE = [
+    ':020000040008F2',
+    ':105DC000000102030405060708090A0B0C0D0E0F5B',
+    ':045DD0001011121389',
+    ':020000042000DA',
+    ':08100000DEADBEEF00010203AA',
+    ':0400000508005DC1D1',
+    ':00000001FF'
+].join('\n');
+
+const snapshot = (blocks: IntelHEX.MemoryBlock[]) => blocks.map(block => ({
+    address: `0x${block.address.toString(16).toUpperCase()}`,
+    bytes: Array.from(block.bytes)
+}));
 
 describe('intel-hex', () => {
     it('round-trips memory above 0x80000000', () => {
@@ -51,5 +67,32 @@ describe('intel-hex', () => {
 
     it('rejects invalid checksums', () => {
         expect(() => IntelHEX.decode(':020000040001F8\n:00000001FF\n')).to.throw('Invalid Intel HEX checksum');
+    });
+
+    it('rejects malformed hex bytes instead of parsing a valid prefix', () => {
+        expect(() => IntelHEX.decode(':0000000G00\n')).to.throw("Invalid hex byte on line 1: '0G'");
+    });
+
+    it('matches the snapshot of a representative Intel HEX capture', () => {
+        expect(snapshot(IntelHEX.decode(REPRESENTATIVE_CAPTURE))).to.deep.equal([
+            {
+                address: '0x85DC0',
+                bytes: [
+                    0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
+                    0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F,
+                    0x10, 0x11, 0x12, 0x13
+                ]
+            },
+            {
+                address: '0x20001000',
+                bytes: [0xDE, 0xAD, 0xBE, 0xEF, 0x00, 0x01, 0x02, 0x03]
+            }
+        ]);
+    });
+
+    it('preserves the captured memory layout when re-encoded', () => {
+        const decoded = IntelHEX.decode(REPRESENTATIVE_CAPTURE);
+
+        expect(snapshot(IntelHEX.decode(IntelHEX.encode(decoded)))).to.deep.equal(snapshot(decoded));
     });
 });
