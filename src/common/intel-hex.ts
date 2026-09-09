@@ -1,5 +1,6 @@
 /********************************************************************************
- * Copyright (C) 2024 EclipseSource and Arm Limited.
+ * Copyright (C) 2024 EclipseSource.
+ * Copyright (C) 2026 Arm Limited and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
